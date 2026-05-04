@@ -1,0 +1,86 @@
+commodities:
+  - code: copper
+    name: Copper
+    category: industrial_metal
+    unit: lb
+    currency: USD
+    is_active: true
+  - code: uranium
+    name: Uranium
+    category: energy_metal
+    unit: lb
+    currency: USD
+    is_active: true
+  - code: natural_gas
+    name: Natural Gas
+    category: energy
+    unit: mmbtu
+    currency: USD
+    is_active: true
+  - code: crude_oil
+    name: Crude Oil
+    category: energy
+    unit: barrel
+    currency: USD
+    is_active: true
+  - code: aluminum
+    name: Aluminum
+    category: industrial_metal
+    unit: tonne
+    currency: USD
+    is_active: true
+  - code: lithium
+    name: Lithium
+    category: battery_metal
+    unit: tonne
+    currency: USD
+    is_active: true
+  - code: nickel
+    name: Nickel
+    category: battery_metal
+    unit: tonne
+    currency: USD
+    is_active: true
+  - code: fertilizer
+    name: Fertilizer
+    category: agriculture
+    unit: index
+    currency: USD
+    is_active: true
+  - code: gold
+    name: Gold
+    category: precious_metal
+    unit: oz
+    currency: USD
+    is_active: true
+  - code: silver
+    name: Silver
+    category: precious_metal
+    unit: oz
+    currency: USD
+    is_active: true
+  - code: iron_ore
+    name: Iron Ore
+    category: steel_input
+    unit: tonne
+    currency: USD
+    is_active: true
+  - code: steel
+    name: Steel
+    category: industrial_metal
+    unit: tonne
+    currency: USD
+    is_active: true
+  - code: rare_earths
+    name: Rare Earths
+    category: critical_mineral
+    unit: index
+    currency: USD
+    is_active: true
+  - code: coal
+    name: Coal
+    category: energy
+    unit: tonne
+    currency: USD
+    is_active: true
+

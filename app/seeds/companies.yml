@@ -1,0 +1,462 @@
+companies:
+  - ticker: FCX
+    company_name: Freeport-McMoRan
+    market: US
+    exchange: NYSE
+    country: United States
+    currency: USD
+    sector: metals_mining
+    risk_level: medium
+    notes: Large copper producer with gold byproducts.
+    is_active: true
+    exposures:
+      - commodity_code: copper
+        exposure_type: producer
+        exposure_direction: positive
+        exposure_score: 92
+        notes: Direct producer leverage to copper prices.
+      - commodity_code: gold
+        exposure_type: producer
+        exposure_direction: positive
+        exposure_score: 35
+  - ticker: SCCO
+    company_name: Southern Copper
+    market: US
+    exchange: NYSE
+    country: United States
+    currency: USD
+    sector: metals_mining
+    risk_level: medium
+    notes: Copper producer.
+    is_active: true
+    exposures:
+      - commodity_code: copper
+        exposure_type: producer
+        exposure_direction: positive
+        exposure_score: 90
+  - ticker: BHP
+    company_name: BHP Group
+    market: US
+    exchange: NYSE
+    country: Australia
+    currency: USD
+    sector: diversified_mining
+    risk_level: low
+    notes: Diversified miner with copper, iron ore, coal exposure.
+    is_active: true
+    exposures:
+      - commodity_code: copper
+        exposure_type: diversified
+        exposure_direction: positive
+        exposure_score: 55
+      - commodity_code: iron_ore
+        exposure_type: producer
+        exposure_direction: positive
+        exposure_score: 75
+      - commodity_code: coal
+        exposure_type: producer
+        exposure_direction: positive
+        exposure_score: 35
+  - ticker: XOM
+    company_name: Exxon Mobil
+    market: US
+    exchange: NYSE
+    country: United States
+    currency: USD
+    sector: energy
+    risk_level: low
+    notes: Integrated oil and gas major.
+    is_active: true
+    exposures:
+      - commodity_code: crude_oil
+        exposure_type: producer
+        exposure_direction: positive
+        exposure_score: 82
+      - commodity_code: natural_gas
+        exposure_type: producer
+        exposure_direction: positive
+        exposure_score: 55
+  - ticker: EQT
+    company_name: EQT
+    market: US
+    exchange: NYSE
+    country: United States
+    currency: USD
+    sector: energy
+    risk_level: medium
+    notes: US natural gas producer.
+    is_active: true
+    exposures:
+      - commodity_code: natural_gas
+        exposure_type: producer
+        exposure_direction: positive
+        exposure_score: 88
+  - ticker: CCJ
+    company_name: Cameco
+    market: US
+    exchange: NYSE
+    country: Canada
+    currency: USD
+    sector: uranium
+    risk_level: medium
+    notes: Uranium producer and nuclear fuel cycle exposure.
+    is_active: true
+    exposures:
+      - commodity_code: uranium
+        exposure_type: producer
+        exposure_direction: positive
+        exposure_score: 92
+  - ticker: ALB
+    company_name: Albemarle
+    market: US
+    exchange: NYSE
+    country: United States
+    currency: USD
+    sector: battery_materials
+    risk_level: medium
+    notes: Lithium producer and processor.
+    is_active: true
+    exposures:
+      - commodity_code: lithium
+        exposure_type: producer
+        exposure_direction: positive
+        exposure_score: 88
+  - ticker: NTR
+    company_name: Nutrien
+    market: US
+    exchange: NYSE
+    country: Canada
+    currency: USD
+    sector: fertilizer
+    risk_level: medium
+    notes: Fertilizer producer and distributor.
+    is_active: true
+    exposures:
+      - commodity_code: fertilizer
+        exposure_type: producer
+        exposure_direction: positive
+        exposure_score: 86
+      - commodity_code: natural_gas
+        exposure_type: consumer
+        exposure_direction: negative
+        exposure_score: 45
+  - ticker: NEM
+    company_name: Newmont
+    market: US
+    exchange: NYSE
+    country: United States
+    currency: USD
+    sector: precious_metals
+    risk_level: medium
+    notes: Gold producer.
+    is_active: true
+    exposures:
+      - commodity_code: gold
+        exposure_type: producer
+        exposure_direction: positive
+        exposure_score: 90
+  - ticker: NUE
+    company_name: Nucor
+    market: US
+    exchange: NYSE
+    country: United States
+    currency: USD
+    sector: steel
+    risk_level: low
+    notes: Steel producer.
+    is_active: true
+    exposures:
+      - commodity_code: steel
+        exposure_type: producer
+        exposure_direction: positive
+        exposure_score: 78
+      - commodity_code: iron_ore
+        exposure_type: consumer
+        exposure_direction: negative
+        exposure_score: 35
+  - ticker: AA
+    company_name: Alcoa
+    market: US
+    exchange: NYSE
+    country: United States
+    currency: USD
+    sector: aluminum
+    risk_level: medium
+    notes: Aluminum producer.
+    is_active: true
+    exposures:
+      - commodity_code: aluminum
+        exposure_type: producer
+        exposure_direction: positive
+        exposure_score: 90
+
+  - ticker: 005490.KS
+    company_name: POSCO Holdings
+    market: KR_KOSPI
+    exchange: KRX
+    country: Korea
+    currency: KRW
+    sector: steel_battery_materials
+    risk_level: medium
+    notes: Steel producer with battery material interests; input cost exposure matters.
+    is_active: true
+    exposures:
+      - commodity_code: steel
+        exposure_type: producer
+        exposure_direction: positive
+        exposure_score: 70
+      - commodity_code: iron_ore
+        exposure_type: consumer
+        exposure_direction: negative
+        exposure_score: 55
+      - commodity_code: lithium
+        exposure_type: diversified
+        exposure_direction: mixed
+        exposure_score: 45
+  - ticker: 004020.KS
+    company_name: Hyundai Steel
+    market: KR_KOSPI
+    exchange: KRX
+    country: Korea
+    currency: KRW
+    sector: steel
+    risk_level: medium
+    notes: Steel producer; iron ore and coal can pressure margins.
+    is_active: true
+    exposures:
+      - commodity_code: steel
+        exposure_type: producer
+        exposure_direction: positive
+        exposure_score: 72
+      - commodity_code: iron_ore
+        exposure_type: consumer
+        exposure_direction: negative
+        exposure_score: 60
+      - commodity_code: coal
+        exposure_type: consumer
+        exposure_direction: negative
+        exposure_score: 40
+  - ticker: 010130.KS
+    company_name: Korea Zinc
+    market: KR_KOSPI
+    exchange: KRX
+    country: Korea
+    currency: KRW
+    sector: metals_processing
+    risk_level: medium
+    notes: Smelter and processor with precious metals exposure.
+    is_active: true
+    exposures:
+      - commodity_code: silver
+        exposure_type: processor
+        exposure_direction: mixed
+        exposure_score: 62
+      - commodity_code: gold
+        exposure_type: processor
+        exposure_direction: mixed
+        exposure_score: 45
+      - commodity_code: coal
+        exposure_type: consumer
+        exposure_direction: negative
+        exposure_score: 25
+  - ticker: 006260.KS
+    company_name: LS Corp
+    market: KR_KOSPI
+    exchange: KRX
+    country: Korea
+    currency: KRW
+    sector: copper_electrical_equipment
+    risk_level: medium
+    notes: Copper cable and electrical equipment exposure; copper price can raise revenue and costs.
+    is_active: true
+    exposures:
+      - commodity_code: copper
+        exposure_type: processor
+        exposure_direction: mixed
+        exposure_score: 68
+  - ticker: 051910.KS
+    company_name: LG Chem
+    market: KR_KOSPI
+    exchange: KRX
+    country: Korea
+    currency: KRW
+    sector: chemicals_battery_materials
+    risk_level: medium
+    notes: Chemical and battery material exposure; feedstock cost can hurt margins.
+    is_active: true
+    exposures:
+      - commodity_code: lithium
+        exposure_type: processor
+        exposure_direction: mixed
+        exposure_score: 62
+      - commodity_code: crude_oil
+        exposure_type: consumer
+        exposure_direction: negative
+        exposure_score: 48
+  - ticker: 003670.KS
+    company_name: POSCO Future M
+    market: KR_KOSPI
+    exchange: KRX
+    country: Korea
+    currency: KRW
+    sector: battery_materials
+    risk_level: high
+    notes: Cathode/anode material exposure; raw material pass-through and margins matter.
+    is_active: true
+    exposures:
+      - commodity_code: lithium
+        exposure_type: processor
+        exposure_direction: mixed
+        exposure_score: 78
+      - commodity_code: nickel
+        exposure_type: processor
+        exposure_direction: mixed
+        exposure_score: 72
+  - ticker: 247540.KQ
+    company_name: EcoPro BM
+    market: KR_KOSDAQ
+    exchange: KRX
+    country: Korea
+    currency: KRW
+    sector: battery_materials
+    risk_level: high
+    notes: Cathode material producer; raw material price impact is mixed.
+    is_active: true
+    exposures:
+      - commodity_code: lithium
+        exposure_type: processor
+        exposure_direction: mixed
+        exposure_score: 78
+      - commodity_code: nickel
+        exposure_type: processor
+        exposure_direction: mixed
+        exposure_score: 78
+  - ticker: 267260.KS
+    company_name: HD Hyundai Electric
+    market: KR_KOSPI
+    exchange: KRX
+    country: Korea
+    currency: KRW
+    sector: copper_electrical_equipment
+    risk_level: medium
+    notes: Power transformer and electrical equipment exposure; copper and steel are important input costs.
+    is_active: true
+    exposures:
+      - commodity_code: copper
+        exposure_type: consumer
+        exposure_direction: negative
+        exposure_score: 58
+      - commodity_code: steel
+        exposure_type: consumer
+        exposure_direction: negative
+        exposure_score: 32
+  - ticker: 010120.KS
+    company_name: LS ELECTRIC
+    market: KR_KOSPI
+    exchange: KRX
+    country: Korea
+    currency: KRW
+    sector: electrical_equipment_power_grid
+    risk_level: medium
+    notes: Power grid and electrical equipment exposure; copper and steel input costs can affect margins.
+    is_active: true
+    exposures:
+      - commodity_code: copper
+        exposure_type: consumer
+        exposure_direction: negative
+        exposure_score: 55
+      - commodity_code: steel
+        exposure_type: consumer
+        exposure_direction: negative
+        exposure_score: 30
+  - ticker: 096770.KS
+    company_name: SK Innovation
+    market: KR_KOSPI
+    exchange: KRX
+    country: Korea
+    currency: KRW
+    sector: refining_energy_battery
+    risk_level: medium
+    notes: Refining, energy, and battery exposure; crude price impact is mixed and battery materials can affect margins.
+    is_active: true
+    exposures:
+      - commodity_code: crude_oil
+        exposure_type: processor
+        exposure_direction: mixed
+        exposure_score: 65
+      - commodity_code: lithium
+        exposure_type: processor
+        exposure_direction: mixed
+        exposure_score: 45
+      - commodity_code: nickel
+        exposure_type: processor
+        exposure_direction: mixed
+        exposure_score: 35
+  - ticker: 010950.KS
+    company_name: S-Oil
+    market: KR_KOSPI
+    exchange: KRX
+    country: Korea
+    currency: KRW
+    sector: refining
+    risk_level: medium
+    notes: Refining margin matters more than crude price alone.
+    is_active: true
+    exposures:
+      - commodity_code: crude_oil
+        exposure_type: processor
+        exposure_direction: mixed
+        exposure_score: 68
+  - ticker: 036460.KS
+    company_name: Korea Gas Corporation
+    market: KR_KOSPI
+    exchange: KRX
+    country: Korea
+    currency: KRW
+    sector: gas_utility
+    risk_level: medium
+    notes: Regulated gas infrastructure; commodity price impact is policy-dependent.
+    is_active: false
+    exposures:
+      - commodity_code: natural_gas
+        exposure_type: midstream
+        exposure_direction: mixed
+        exposure_score: 55
+  - ticker: 015760.KS
+    company_name: Korea Electric Power
+    market: KR_KOSPI
+    exchange: KRX
+    country: Korea
+    currency: KRW
+    sector: electric_utility
+    risk_level: high
+    notes: Fuel cost exposure can be negative unless tariff policy offsets it.
+    is_active: false
+    exposures:
+      - commodity_code: coal
+        exposure_type: consumer
+        exposure_direction: negative
+        exposure_score: 70
+      - commodity_code: natural_gas
+        exposure_type: consumer
+        exposure_direction: negative
+        exposure_score: 70
+  - ticker: 329180.KS
+    company_name: HD Hyundai Heavy Industries
+    market: KR_KOSPI
+    exchange: KRX
+    country: Korea
+    currency: KRW
+    sector: shipbuilding
+    risk_level: medium
+    notes: LNG and energy infrastructure cycle exposure, not direct commodity producer.
+    is_active: true
+    exposures:
+      - commodity_code: natural_gas
+        exposure_type: diversified
+        exposure_direction: mixed
+        exposure_score: 45
+      - commodity_code: steel
+        exposure_type: consumer
+        exposure_direction: negative
+        exposure_score: 45
