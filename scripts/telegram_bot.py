@@ -8,7 +8,7 @@ from sqlalchemy import select
 
 from app.config import get_settings
 from app.db.base import Base
-from app.db.models import Commodity, Company, CompanyCommodityExposure, UserPosition, ValuationTarget
+from app.db.models import Benchmark, Commodity, Company, CompanyCommodityExposure, UserPosition, ValuationTarget
 from app.db.session import engine, get_session
 from app.providers.factory import fundamentals_provider, market_data_provider
 from app.services.pipeline import run_pipeline
@@ -113,6 +113,11 @@ def handle_message(chat_id: str, text: str) -> str:
         if len(parts) < 2:
             return "형식: /remove_watch 티커"
         return _remove_watch(parts[1])
+    if command in {"/remove", "/remove_all"}:
+        keyword = text.removeprefix(parts[0]).strip()
+        if not keyword:
+            return "형식: /remove keyword"
+        return _remove_all(keyword)
     if command == "/value_targets":
         return _value_targets()
     if command == "/add_value":
@@ -139,6 +144,8 @@ def handle_message(chat_id: str, text: str) -> str:
         if len(parts) < 2:
             return "형식: /remove_value 티커"
         return _remove_value(parts[1])
+    if command == "/report":
+        return _report()
     if command == "/run":
         sent = run_pipeline()
         return f"실행 완료. 알림 {sent}개 발송."
@@ -379,6 +386,49 @@ def _remove_watch(ticker: str) -> str:
         company.is_active = False
         session.commit()
         return f"감시종목 삭제: {ticker}"
+    finally:
+        session.close()
+
+
+def _remove_all(keyword: str) -> str:
+    Base.metadata.create_all(bind=engine)
+    keyword = keyword.strip()
+    pattern = f"%{keyword}%"
+    session = get_session()
+    try:
+        companies = list(
+            session.scalars(
+                select(Company).where(Company.ticker.ilike(pattern) | Company.company_name.ilike(pattern))
+            )
+        )
+        targets = list(
+            session.scalars(
+                select(ValuationTarget).where(
+                    ValuationTarget.ticker.ilike(pattern) | ValuationTarget.company_name.ilike(pattern)
+                )
+            )
+        )
+
+        matched: dict[str, str] = {}
+        for company in companies:
+            matched[company.ticker.upper()] = company.company_name or company.ticker
+        for target in targets:
+            matched.setdefault(target.ticker.upper(), target.company_name or target.ticker)
+
+        if not matched:
+            return f"검색 결과가 없습니다: {keyword}"
+
+        tickers = sorted(matched)
+        for position in session.scalars(select(UserPosition).where(UserPosition.ticker.in_(tickers))):
+            position.is_active = False
+        for company in session.scalars(select(Company).where(Company.ticker.in_(tickers))):
+            company.is_active = False
+        for target in session.scalars(select(ValuationTarget).where(ValuationTarget.ticker.in_(tickers))):
+            target.is_active = False
+
+        session.commit()
+        deleted = ", ".join(f"{matched[ticker]} ({ticker})" for ticker in tickers)
+        return f"✅ 다음 종목들이 모든 리스트에서 삭제(비활성화)되었습니다: {deleted}"
     finally:
         session.close()
 
@@ -626,6 +676,72 @@ def _remove_value(ticker: str) -> str:
         return f"적정가 감시 삭제: {ticker}"
     finally:
         session.close()
+
+
+def _report() -> str:
+    settings = get_settings()
+    Base.metadata.create_all(bind=engine)
+    session = get_session()
+    try:
+        companies = list(session.scalars(select(Company).where(Company.is_active.is_(True)).order_by(Company.ticker)))
+        if not companies:
+            return "활성 워치리스트 종목이 없습니다."
+
+        benchmarks = {row.market: row.ticker for row in session.scalars(select(Benchmark))}
+        benchmark_by_ticker = {
+            company.ticker: benchmarks.get(company.market, "URTH")
+            for company in companies
+        }
+        commodity_codes = sorted({exposure.commodity.code for company in companies for exposure in company.exposures})
+        tickers = [company.ticker for company in companies]
+
+        market = market_data_provider(settings)
+        stock_moves = market.stock_moves(tickers, benchmark_by_ticker)
+        commodity_moves = market.commodity_moves(commodity_codes) if commodity_codes else {}
+
+        lines = ["📊 Copper Tea report"]
+        for company in companies:
+            stock = stock_moves.get(company.ticker)
+            if stock is None:
+                lines.append(f"{company.ticker} / {company.company_name}: price data unavailable")
+                continue
+
+            excess = stock.return_pct - stock.benchmark_return_pct
+            exposure = _top_report_exposure(company, commodity_moves)
+            ma_label = _ma_label(stock.ma5, stock.ma20)
+            lines.append(
+                f"{company.ticker} / {company.company_name}: "
+                f"excess {excess:+.1f}% | stock mom {stock.momentum_pct:+.1f}% | "
+                f"{exposure} | {ma_label}"
+            )
+        return "\n".join(lines)
+    except Exception as exc:
+        return f"리포트 생성 실패: {exc}"
+    finally:
+        session.close()
+
+
+def _top_report_exposure(company: Company, commodity_moves: dict) -> str:
+    ranked = []
+    for exposure in company.exposures:
+        move = commodity_moves.get(exposure.commodity.code)
+        if move is None:
+            continue
+        rank = exposure.exposure_score * (abs(move.momentum_pct) + abs(move.move_pct))
+        ranked.append((rank, exposure.commodity.code, move))
+    if not ranked:
+        return "commodity n/a"
+    _, code, move = max(ranked, key=lambda item: item[0])
+    ma_label = _ma_label(move.ma5, move.ma20)
+    return f"{code} mom {move.momentum_pct:+.1f}% ({ma_label})"
+
+
+def _ma_label(ma5: float | None, ma20: float | None) -> str:
+    if ma5 is None or ma20 is None:
+        return "MA n/a"
+    if ma5 >= ma20:
+        return "MA5>MA20"
+    return "MA5<MA20"
 
 
 def _parse_value_line(text: str) -> dict:

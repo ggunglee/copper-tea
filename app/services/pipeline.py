@@ -129,6 +129,12 @@ def run_pipeline(settings: Settings | None = None) -> int:
                     stock_momentum_pct=stock.momentum_pct,
                     commodity_momentum_pct=commodity_move.momentum_pct,
                     risk_level=company.risk_level,
+                    last_price=stock.last_price,
+                    week52_high=stock.week52_high,
+                    stock_ma5=stock.ma5,
+                    stock_ma20=stock.ma20,
+                    commodity_ma5=commodity_move.ma5,
+                    commodity_ma20=commodity_move.ma20,
                 )
 
                 peer_label = sector_valuation.get(company.ticker, "비교 부족")

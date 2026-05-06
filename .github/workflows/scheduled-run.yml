@@ -1,0 +1,68 @@
+name: Scheduled Copper Tea run
+
+on:
+  workflow_dispatch:
+  schedule:
+    # GitHub schedules use UTC. These are 09:00 and 21:00 Asia/Seoul.
+    - cron: "0 0,12 * * 1-5"
+
+concurrency:
+  group: copper-tea-scheduled-run
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    env:
+      DATABASE_URL: sqlite:///data/app.sqlite3
+      APP_TIMEZONE: Asia/Seoul
+      RUN_TIMES: "09:00,21:00"
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      TELEGRAM_CONNECT_TIMEOUT: ${{ vars.TELEGRAM_CONNECT_TIMEOUT || '10' }}
+      TELEGRAM_READ_TIMEOUT: ${{ vars.TELEGRAM_READ_TIMEOUT || '30' }}
+      TELEGRAM_SEND_RETRIES: ${{ vars.TELEGRAM_SEND_RETRIES || '3' }}
+      PRICE_PROVIDER: ${{ vars.PRICE_PROVIDER || 'yahoo' }}
+      NEWS_PROVIDER: ${{ vars.NEWS_PROVIDER || 'rss' }}
+      FUNDAMENTALS_PROVIDER: ${{ vars.FUNDAMENTALS_PROVIDER || 'yahoo' }}
+      MIN_BUY_SCORE: ${{ vars.MIN_BUY_SCORE || '65' }}
+      MIN_SELL_SCORE: ${{ vars.MIN_SELL_SCORE || '65' }}
+      POSITION_WATCH_RETURN_PCT: ${{ vars.POSITION_WATCH_RETURN_PCT || '10' }}
+      POSITION_WATCH_DAILY_PCT: ${{ vars.POSITION_WATCH_DAILY_PCT || '3' }}
+      DEDUP_SCORE_DELTA: ${{ vars.DEDUP_SCORE_DELTA || '10' }}
+      COMMODITY_SHOCK_DAILY_PCT: ${{ vars.COMMODITY_SHOCK_DAILY_PCT || '3' }}
+      COMMODITY_TREND_MOMENTUM_PCT: ${{ vars.COMMODITY_TREND_MOMENTUM_PCT || '7' }}
+      COMMODITY_STRUCTURAL_EVENT_SCORE: ${{ vars.COMMODITY_STRUCTURAL_EVENT_SCORE || '65' }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set KST cache date
+        id: kst-date
+        run: echo "date=$(TZ=Asia/Seoul date +%Y%m%d)" >> "$GITHUB_OUTPUT"
+
+      - name: Restore daily alert state
+        uses: actions/cache@v4
+        with:
+          path: data/app.sqlite3
+          key: ${{ runner.os }}-copper-tea-${{ steps.kst-date.outputs.date }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install package
+        run: pip install -e .
+
+      - name: Initialize and seed database
+        run: |
+          python scripts/init_db.py
+          python scripts/seed_db.py
+
+      - name: Run alert pipeline
+        run: python -m app.main run-once --force

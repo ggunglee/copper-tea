@@ -195,3 +195,56 @@ Status:
 ```bash
 python scripts/show_status.py
 ```
+
+If Termux was killed during a run and future scheduled runs appear stuck, check:
+
+```bash
+ls -l data/state
+python scripts/show_status.py
+```
+
+The app now clears stale `data/state/run.lock` files when the recorded process is
+gone or the lock is older than two hours.
+
+To update the phone copy without moving zip files:
+
+```bash
+git clone https://github.com/<owner>/<repo>.git copper-tea
+cd copper-tea
+pip install -e .
+git pull --ff-only
+```
+
+Keep `.env` only on the phone. It is ignored by git.
+
+## GitHub Actions Scheduler
+
+This repository includes a scheduled workflow at `.github/workflows/scheduled-run.yml`.
+It runs on weekdays at 09:00 and 21:00 Asia/Seoul, and can also be started from
+the GitHub Actions tab with `workflow_dispatch`.
+
+Add these repository secrets in GitHub:
+
+```text
+TELEGRAM_BOT_TOKEN
+TELEGRAM_CHAT_ID
+```
+
+Optional repository variables can override `.env.example` defaults:
+
+```text
+PRICE_PROVIDER=yahoo
+NEWS_PROVIDER=rss
+FUNDAMENTALS_PROVIDER=yahoo
+MIN_BUY_SCORE=65
+MIN_SELL_SCORE=65
+```
+
+The workflow initializes and seeds `data/app.sqlite3` on the runner, then runs:
+
+```bash
+python -m app.main run-once --force
+```
+
+It caches the SQLite database by Asia/Seoul date so the second daily run can see
+the first run's alert history and avoid same-day duplicate alerts.

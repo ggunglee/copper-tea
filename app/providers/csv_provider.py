@@ -27,7 +27,13 @@ class CsvMarketDataProvider(MarketDataProvider):
             return self.fallback.commodity_moves(commodity_codes)
         rows = _read_csv(path)
         return {
-            row["code"]: PriceMove(row["code"], float(row["move_pct"]), float(row.get("momentum_pct", 0)))
+            row["code"]: PriceMove(
+                row["code"],
+                float(row["move_pct"]),
+                float(row.get("momentum_pct", 0)),
+                _optional_float(row.get("ma5")),
+                _optional_float(row.get("ma20")),
+            )
             for row in rows
             if row["code"] in commodity_codes
         }
@@ -47,6 +53,8 @@ class CsvMarketDataProvider(MarketDataProvider):
                 last_price=float(row.get("last_price", 0)),
                 week52_high=_optional_float(row.get("week52_high")),
                 week52_low=_optional_float(row.get("week52_low")),
+                ma5=_optional_float(row.get("ma5")),
+                ma20=_optional_float(row.get("ma20")),
             )
             for row in rows
             if row["ticker"] in tickers

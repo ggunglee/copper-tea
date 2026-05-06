@@ -30,6 +30,8 @@ class MockMarketDataProvider(MarketDataProvider):
                 code=code,
                 move_pct=round(move, 2),
                 momentum_pct=_stable_float(f"commodity:{code}:momentum", -4.0, 8.0),
+                ma5=None,
+                ma20=None,
             )
         return result
 
@@ -47,6 +49,8 @@ class MockMarketDataProvider(MarketDataProvider):
                 last_price=_stable_float(f"stock:{ticker}:price", 10.0, 250000.0),
                 week52_high=None,
                 week52_low=None,
+                ma5=None,
+                ma20=None,
             )
         return result
 

@@ -8,6 +8,8 @@ class PriceMove:
     code: str
     move_pct: float
     momentum_pct: float
+    ma5: float | None = None
+    ma20: float | None = None
 
 
 @dataclass(frozen=True)
@@ -20,6 +22,8 @@ class StockMove:
     last_price: float
     week52_high: float | None = None
     week52_low: float | None = None
+    ma5: float | None = None
+    ma20: float | None = None
 
 
 @dataclass(frozen=True)

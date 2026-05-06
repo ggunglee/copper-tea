@@ -15,7 +15,7 @@ def run_scheduler(settings: Settings | None = None) -> None:
                 slot = guard.claim_slot(force=False)
                 if slot:
                     run_pipeline(settings)
-        except RuntimeError:
-            pass
+        except RuntimeError as exc:
+            print(f"Scheduler skipped run: {exc}", flush=True)
         finally:
             time.sleep(60)

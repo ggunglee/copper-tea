@@ -47,13 +47,15 @@ class YahooMarketDataProvider(MarketDataProvider):
                 code=code,
                 move_pct=move[0] if move else fallback[code].move_pct,
                 momentum_pct=move[1] if move else fallback[code].momentum_pct,
+                ma5=move[6] if move else fallback[code].ma5,
+                ma20=move[7] if move else fallback[code].ma20,
             )
         return result
 
     def stock_moves(self, tickers: list[str], benchmark_by_ticker: dict[str, str]) -> dict[str, StockMove]:
         fallback = self.fallback.stock_moves(tickers, benchmark_by_ticker)
         result = {}
-        benchmark_cache: dict[str, tuple[float, float, float, float, float, float] | None] = {}
+        benchmark_cache: dict[str, tuple[float, float, float, float, float, float, float | None, float | None] | None] = {}
         for ticker in tickers:
             move = self._move_for_symbol(ticker, days=260)
             if not move:
@@ -72,10 +74,14 @@ class YahooMarketDataProvider(MarketDataProvider):
                 last_price=move[2],
                 week52_high=move[4],
                 week52_low=move[5],
+                ma5=move[6],
+                ma20=move[7],
             )
         return result
 
-    def _move_for_symbol(self, symbol: str, days: int = 45) -> tuple[float, float, float, float, float, float] | None:
+    def _move_for_symbol(
+        self, symbol: str, days: int = 45
+    ) -> tuple[float, float, float, float, float, float, float | None, float | None] | None:
         prices = self._chart(symbol, days=days)
         if len(prices) < 2:
             return None
@@ -91,6 +97,8 @@ class YahooMarketDataProvider(MarketDataProvider):
         closes = [item["close"] for item in prices]
         week52_high = max(closes)
         week52_low = min(closes)
+        ma5 = _moving_average(closes, 5)
+        ma20 = _moving_average(closes, 20)
         return (
             round(return_pct, 2),
             round(momentum_pct, 2),
@@ -98,6 +106,8 @@ class YahooMarketDataProvider(MarketDataProvider):
             round(volume_ratio, 2),
             round(week52_high, 4),
             round(week52_low, 4),
+            round(ma5, 4) if ma5 is not None else None,
+            round(ma20, 4) if ma20 is not None else None,
         )
 
     def _chart(self, symbol: str, days: int) -> list[dict[str, float]]:
@@ -218,6 +228,13 @@ def _raw(data: dict[str, Any], module: str, key: str) -> float | None:
 def _percent_raw(data: dict[str, Any], module: str, key: str) -> float | None:
     value = _raw(data, module, key)
     return round(value * 100, 2) if value is not None else None
+
+
+def _moving_average(values: list[float], window: int) -> float | None:
+    if len(values) < window:
+        return None
+    sample = values[-window:]
+    return sum(sample) / window
 
 
 def _linear_score(value: float, good: float, bad: float) -> float:
