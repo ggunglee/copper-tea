@@ -35,6 +35,8 @@ class EventData:
     title: str
     source: str = "mock"
     url: str = ""
+    evidence_titles: tuple[str, ...] = ()
+    evidence_urls: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)

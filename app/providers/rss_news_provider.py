@@ -102,7 +102,7 @@ class RssNewsProvider(NewsProvider):
         response.raise_for_status()
         root = ET.fromstring(response.content)
         cutoff = datetime.now(timezone.utc) - self.lookback
-        articles = []
+        articles: list[tuple[str, str]] = []
         keyword_score = 0
         structural_score = 0
         for item in root.findall("./channel/item"):
@@ -130,6 +130,8 @@ class RssNewsProvider(NewsProvider):
             title=articles[0][0],
             source="google_news_rss",
             url=articles[0][1],
+            evidence_titles=tuple(title for title, _ in articles[:3]),
+            evidence_urls=tuple(link for _, link in articles[:3]),
         )
 
 

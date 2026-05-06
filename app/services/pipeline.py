@@ -142,7 +142,8 @@ def run_pipeline(settings: Settings | None = None) -> int:
                 peer_label = sector_valuation.get(company.ticker, "비교 부족")
                 detail_lines = [
                     *_commodity_signal_lines(commodity_move, event),
-                    *_detail_lines(stock, fund, peer_label, event.title if event.source != "mock" else ""),
+                    *_detail_lines(stock, fund, peer_label),
+                    *_evidence_lines(event),
                 ]
 
                 buy_value, _ = buy_score(score_input)
@@ -509,8 +510,8 @@ def _position_commodity_lines(company, commodity_moves, event_by_commodity) -> l
         f"{exposure.commodity.code} {move_pct:+.1f}%, "
         f"{_exposure_type_label(exposure.exposure_type)} / {_direction_label(exposure.exposure_direction)}"
     )
-    if event and event.source != "mock" and event.title:
-        lines.append(f"관련 뉴스 : {event.title}")
+    if event:
+        lines.extend(_evidence_lines(event))
 
     other = ranked[1:3]
     if other:
@@ -522,7 +523,7 @@ def _position_commodity_lines(company, commodity_moves, event_by_commodity) -> l
     return lines
 
 
-def _detail_lines(stock, fund, peer_label: str, news_title: str) -> list[str]:
+def _detail_lines(stock, fund, peer_label: str) -> list[str]:
     lines = [*_price_lines(stock)]
     multiples = []
     if fund.pe is not None:
@@ -536,8 +537,28 @@ def _detail_lines(stock, fund, peer_label: str, news_title: str) -> list[str]:
     if multiples:
         lines.append("주요 지표: " + ", ".join(multiples))
     lines.append(f"PER/PBR 동종업계 {peer_label}")
-    if news_title:
-        lines.append(f"관련 뉴스 : {news_title}")
+    return lines
+
+
+def _evidence_lines(event) -> list[str]:
+    if event.source == "mock":
+        return []
+
+    titles = list(event.evidence_titles or ())
+    urls = list(event.evidence_urls or ())
+    if not titles and event.title:
+        titles = [event.title]
+        urls = [event.url]
+    if not titles:
+        return []
+
+    lines = ["근거: 가격 변동의 원인으로 단정하지 않고, 같은 기간 확인된 관련 뉴스입니다."]
+    for index, title in enumerate(titles[:3], start=1):
+        url = urls[index - 1] if index - 1 < len(urls) else ""
+        if url:
+            lines.append(f"근거 뉴스 {index}: {title} / {url}")
+        else:
+            lines.append(f"근거 뉴스 {index}: {title}")
     return lines
 
 
