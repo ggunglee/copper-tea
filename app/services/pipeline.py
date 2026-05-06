@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+from datetime import datetime
 from statistics import median
 import traceback
+from zoneinfo import ZoneInfo
 
 from app.alerts.formatter import format_position_watch, format_signal, format_valuation_watch
 from app.db.base import Base
@@ -208,6 +210,8 @@ def run_pipeline(settings: Settings | None = None) -> int:
             )
 
         finish_run(session, run, "success", provider_status="ok")
+        if sent_count == 0 and settings.telegram_notify_run_summary:
+            _send_or_raise(settings, telegram, _format_zero_alert_summary(settings, len(companies), len(valuation_targets)))
         return sent_count
     except Exception as exc:
         finish_run(session, run, "failed", error=f"{exc}\n{traceback.format_exc()}")
@@ -249,12 +253,13 @@ def _record_and_alert(
         reason=reason,
     )
     save_signal(session, signal)
+    signal.current_price = score_input.last_price
 
     if not dedup.should_alert(session, signal_type, company.ticker, commodity_code, score):
         return 0
 
     message = format_signal(signal, company, exposure)
-    if not telegram.send(message):
+    if not _send_or_raise(settings, telegram, message):
         return 0
     save_alert(
         session,
@@ -314,12 +319,13 @@ def _record_position_watch(
         reason=reason,
     )
     save_signal(session, signal)
+    signal.current_price = stock.last_price
 
     if not dedup.should_alert(session, "position", position.ticker, "portfolio", signal.score):
         return 0
 
     message = format_position_watch(signal, company, position)
-    if not telegram.send(message):
+    if not _send_or_raise(settings, telegram, message):
         return 0
     save_alert(
         session,
@@ -388,11 +394,12 @@ def _record_valuation_watch(
         reason=_join_reason_lines(reason_lines),
     )
     save_signal(session, signal)
+    signal.current_price = stock.last_price
 
     if not dedup.should_alert(session, "value", target.ticker, "valuation", signal.score):
         return 0
     message = format_valuation_watch(signal, target)
-    if not telegram.send(message):
+    if not _send_or_raise(settings, telegram, message):
         return 0
     save_alert(
         session,
@@ -407,6 +414,29 @@ def _record_valuation_watch(
         ),
     )
     return 1
+
+
+def _send_or_raise(settings: Settings, telegram: TelegramClient, message: str) -> bool:
+    sent = telegram.send(message)
+    if not sent and settings.telegram_fail_on_send_error and telegram.enabled:
+        raise RuntimeError("Telegram send failed. Check TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID.")
+    return sent
+
+
+def _format_zero_alert_summary(settings: Settings, company_count: int, valuation_count: int) -> str:
+    now = datetime.now(ZoneInfo(settings.app_timezone)).strftime("%Y-%m-%d %H:%M")
+    return "\n".join(
+        [
+            "[Copper Tea 점검 완료]",
+            "",
+            f"기준 시각: {now} {settings.app_timezone}",
+            "신규 알림: 없음",
+            f"활성 워치리스트: {company_count}개",
+            f"밸류에이션 감시: {valuation_count}개",
+            f"매수 기준: {settings.min_buy_score:g}",
+            f"매도 기준: {settings.min_sell_score:g}",
+        ]
+    )
 
 
 def _buy_reason_head(score_input: ScoreInput) -> str:

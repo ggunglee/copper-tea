@@ -35,6 +35,8 @@ class Settings:
     telegram_connect_timeout: float
     telegram_read_timeout: float
     telegram_send_retries: int
+    telegram_notify_run_summary: bool
+    telegram_fail_on_send_error: bool
 
 
 def get_settings() -> Settings:
@@ -64,4 +66,13 @@ def get_settings() -> Settings:
         telegram_connect_timeout=float(os.getenv("TELEGRAM_CONNECT_TIMEOUT", "10")),
         telegram_read_timeout=float(os.getenv("TELEGRAM_READ_TIMEOUT", "30")),
         telegram_send_retries=int(os.getenv("TELEGRAM_SEND_RETRIES", "3")),
+        telegram_notify_run_summary=_env_bool("TELEGRAM_NOTIFY_RUN_SUMMARY", default=False),
+        telegram_fail_on_send_error=_env_bool("TELEGRAM_FAIL_ON_SEND_ERROR", default=False),
     )
+
+
+def _env_bool(name: str, default: bool = False) -> bool:
+    value = os.getenv(name)
+    if value is None:
+        return default
+    return value.strip().lower() in {"1", "true", "yes", "y", "on"}

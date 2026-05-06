@@ -230,6 +230,11 @@ TELEGRAM_BOT_TOKEN
 TELEGRAM_CHAT_ID
 ```
 
+GitHub Actions sets `TELEGRAM_NOTIFY_RUN_SUMMARY=true`, so a manual or scheduled
+run still sends a Telegram completion message when there are no new alerts. It
+also sets `TELEGRAM_FAIL_ON_SEND_ERROR=true`, so an invalid Telegram token/chat
+ID fails the workflow instead of silently looking like "0 alerts".
+
 Optional repository variables can override `.env.example` defaults:
 
 ```text
