@@ -3,12 +3,13 @@ from __future__ import annotations
 import re
 
 from app.db.models import CandidateSignal, Company, CompanyCommodityExposure, UserPosition, ValuationTarget
+from app.utils.names import display_company_name
 
 
 def format_signal(signal: CandidateSignal, company: Company, exposure: CompanyCommodityExposure) -> str:
     label = "매수 후보" if signal.signal_type == "buy" else "매도 점검"
     lines = [
-        f"[{label}] {signal.commodity_code} / {company.ticker} {company.company_name}",
+        f"[{label}] {signal.commodity_code} / {company.ticker} {display_company_name(company.ticker, company.company_name)}",
         "",
     ]
     price_line = _price_line(signal, company.currency)
@@ -30,7 +31,7 @@ def format_signal(signal: CandidateSignal, company: Company, exposure: CompanyCo
 
 
 def format_position_watch(signal: CandidateSignal, company: Company | None, position: UserPosition) -> str:
-    name = company.company_name if company else position.ticker
+    name = display_company_name(position.ticker, company.company_name if company else position.ticker)
     lines = [
         f"[보유종목 가격 점검] {position.ticker} {name}",
         "",
@@ -52,7 +53,7 @@ def format_position_watch(signal: CandidateSignal, company: Company | None, posi
 
 
 def format_valuation_watch(signal: CandidateSignal, target: ValuationTarget) -> str:
-    name = target.company_name or target.ticker
+    name = display_company_name(target.ticker, target.company_name or target.ticker)
     return "\n".join(
         [
             f"[밸류에이션 매수가 근접] {target.ticker} {name}",

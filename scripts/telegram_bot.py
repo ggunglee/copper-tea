@@ -13,6 +13,7 @@ from app.db.session import engine, get_session
 from app.providers.factory import fundamentals_provider, market_data_provider
 from app.services.pipeline import run_pipeline
 from app.services.value_estimator import estimate_value_target
+from app.utils.names import display_company_name
 
 
 HELP = """명령어
@@ -287,7 +288,7 @@ def _watch_buy(markets: set[str] | None = None) -> str:
         rows = list(session.scalars(query.order_by(Company.ticker)))
         if not rows:
             return "매수 감시 종목이 없습니다. seed를 다시 넣어야 할 수 있습니다: python scripts/seed_db.py"
-        return "\n".join(f"{c.ticker} / {c.company_name} / {c.market} / {c.sector}" for c in rows)
+        return "\n".join(f"{c.ticker} / {display_company_name(c.ticker, c.company_name)} / {c.market} / {c.sector}" for c in rows)
     finally:
         session.close()
 
@@ -411,9 +412,9 @@ def _remove_all(keyword: str) -> str:
 
         matched: dict[str, str] = {}
         for company in companies:
-            matched[company.ticker.upper()] = company.company_name or company.ticker
+            matched[company.ticker.upper()] = display_company_name(company.ticker, company.company_name)
         for target in targets:
-            matched.setdefault(target.ticker.upper(), target.company_name or target.ticker)
+            matched.setdefault(target.ticker.upper(), display_company_name(target.ticker, target.company_name or target.ticker))
 
         if not matched:
             return f"검색 결과가 없습니다: {keyword}"
@@ -513,7 +514,10 @@ def _upsert_watch_company(row: dict) -> str:
                 exposure.exposure_score = score
 
         session.commit()
-        return f"감시 저장: {row['ticker']} / {row['name']} / {row['sector']}"
+        display_name = display_company_name(row["ticker"], row["name"])
+        if row["market"] in {"KR_KOSPI", "KR_KOSDAQ"}:
+            company.company_name = display_name
+        return f"감시 저장: {row['ticker']} / {display_name} / {row['sector']}"
     finally:
         session.close()
 
@@ -546,7 +550,7 @@ def _value_targets() -> str:
         if not rows:
             return "등록된 적정가 감시 종목이 없습니다."
         return "\n".join(
-            f"{row.ticker} / {row.company_name or row.ticker} / 적정 {row.fair_value_price:g} / "
+            f"{row.ticker} / {display_company_name(row.ticker, row.company_name or row.ticker)} / 적정 {row.fair_value_price:g} / "
             f"매수 {row.buy_price:g} {row.currency} / 버퍼 {row.alert_buffer_pct:g}%"
             for row in rows
         )
@@ -599,7 +603,7 @@ def _estimate_value_text(text: str, save: bool) -> str:
         return f"적정가 계산 실패: {exc}"
 
     lines = [
-        f"{estimate.ticker} / {estimate.company_name}",
+        f"{estimate.ticker} / {display_company_name(estimate.ticker, estimate.company_name)}",
         f"현재가: {estimate.current_price:g} {estimate.currency}",
         f"자동 적정가: {estimate.fair_value_price:g} {estimate.currency}",
         f"자동 매수가: {estimate.buy_price:g} {estimate.currency}",
@@ -637,7 +641,7 @@ def _estimate_value_from_text(text: str):
     try:
         company = session.scalar(select(Company).where(Company.ticker == ticker))
         if company and not company_name:
-            company_name = company.company_name
+            company_name = display_company_name(company.ticker, company.company_name)
         if company and not market:
             market = company.market
         benchmark_by_ticker = {ticker: "URTH"}
@@ -703,14 +707,14 @@ def _report() -> str:
         for company in companies:
             stock = stock_moves.get(company.ticker)
             if stock is None:
-                lines.append(f"{company.ticker} / {company.company_name}: price data unavailable")
+                lines.append(f"{company.ticker} / {display_company_name(company.ticker, company.company_name)}: price data unavailable")
                 continue
 
             excess = stock.return_pct - stock.benchmark_return_pct
             exposure = _top_report_exposure(company, commodity_moves)
             ma_label = _ma_label(stock.ma5, stock.ma20)
             lines.append(
-                f"{company.ticker} / {company.company_name}: "
+                f"{company.ticker} / {display_company_name(company.ticker, company.company_name)}: "
                 f"excess {excess:+.1f}% | stock mom {stock.momentum_pct:+.1f}% | "
                 f"{exposure} | {ma_label}"
             )
@@ -780,7 +784,7 @@ def _upsert_value_target(row: dict) -> str:
             target.is_active = True
         session.commit()
         return (
-            f"적정가 감시 저장: {row['ticker']} / {row['company_name']} / "
+            f"적정가 감시 저장: {row['ticker']} / {display_company_name(row['ticker'], row['company_name'])} / "
             f"적정 {row['fair_value_price']:g} / 매수 {row['buy_price']:g} {row['currency']}"
         )
     finally:
